@@ -1,0 +1,11 @@
+﻿<Application>
+  <Menus>
+    <action type="add">
+      <Menu Checked="0" Enabled="1" FatherUID="2048" Image="" String="Comisiones" Type="2" UniqueID="EXO-MnCOMI"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="EXO-MnCOMI" Image="" String="Definiciones" Type="2" UniqueID="EXO-MnCDef"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="EXO-MnCDef" Image="" String="Grupo de comisiones" Type="1" UniqueID="EXO-MnGCOMI"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="EXO-MnCOMI" Image="" String="Gestión de comisiones" Type="1" UniqueID="EXO-MnGCOM"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="12800" Image="" String="Informes de Comisiones" Type="2" UniqueID="EXO-MnICOM"></Menu>
+    </action>
+  </Menus>
+</Application>
