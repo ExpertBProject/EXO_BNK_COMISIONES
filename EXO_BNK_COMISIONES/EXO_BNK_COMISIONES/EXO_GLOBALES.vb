@@ -1,4 +1,6 @@
 ﻿Imports System.IO
+Imports System.Reflection
+
 Public Class EXO_GLOBALES
     Public Enum FuenteInformacion
         Visual = 1
@@ -20,6 +22,14 @@ Public Class EXO_GLOBALES
 
 
     End Sub
+    Public Shared Function LeerEmbebido(ByVal File As String) As String
+
+        'Dim x As String = New IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(File), System.Text.Encoding.UTF8).ReadToEnd
+        'Return x
+        Dim assmbly As Assembly = Assembly.GetExecutingAssembly()
+        Dim reader As New StreamReader(assmbly.GetManifestResourceStream(File))
+        Return reader.ReadToEnd()
+    End Function
 
 #Region "Funciones formateos datos"
     Public Shared Function DblNumberToText(ByRef oCompany As SAPbobsCOM.Company, ByVal cValor As Double, ByVal oDestino As FuenteInformacion) As String

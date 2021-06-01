@@ -7,6 +7,7 @@ Public Class EXO_GCOM
 
         cargamenu()
         If actualizar Then
+            CrearView()
             cargaCampos()
         End If
 
@@ -31,6 +32,15 @@ Public Class EXO_GCOM
             End If
         End If
     End Sub
+    Private Sub CrearView()
+        Dim sSQL As String = ""
+        Dim bResultado As String = ""
+        If objGlobal.refDi.comunes.esAdministrador Then
+            sSQL = EXO_GLOBALES.LeerEmbebido("EXO_BNK_COMISIONES.VIEW_FACTURAS.sql")
+            bResultado = objGlobal.refDi.SQL.sqlStringB1(sSQL)
+            objGlobal.SBOApp.StatusBar.SetText("Creado View: VIEW_FACTURAS", SAPbouiCOM.BoMessageTime.bmt_Short, SAPbouiCOM.BoStatusBarMessageType.smt_Success)
+        End If
+    End Sub
     Private Sub cargaCampos()
         If objGlobal.refDi.comunes.esAdministrador Then
             Dim oXML As String = ""
@@ -39,6 +49,10 @@ Public Class EXO_GCOM
             oXML = objGlobal.funciones.leerEmbebido(Me.GetType(), "UDO_EXO_GCOM.xml")
             objGlobal.refDi.comunes.LoadBDFromXML(oXML)
             objGlobal.SBOApp.StatusBar.SetText("Validado: UDO_EXO_GCOM.xml", SAPbouiCOM.BoMessageTime.bmt_Medium, SAPbouiCOM.BoStatusBarMessageType.smt_Success)
+
+            oXML = objGlobal.funciones.leerEmbebido(Me.GetType(), "UDFs_OINV.xml")
+            objGlobal.refDi.comunes.LoadBDFromXML(oXML)
+            objGlobal.SBOApp.StatusBar.SetText("Validado: UDFs_OINV.xml", SAPbouiCOM.BoMessageTime.bmt_Medium, SAPbouiCOM.BoStatusBarMessageType.smt_Success)
         End If
     End Sub
     Public Overrides Function filtros() As EventFilters
@@ -194,6 +208,10 @@ Public Class EXO_GCOM
                 oForm.Items.Item("0_U_E").SetAutoManagedAttribute(SAPbouiCOM.BoAutoManagedAttr.ama_Editable, SAPbouiCOM.BoAutoFormMode.afm_Find, SAPbouiCOM.BoModeVisualBehavior.mvb_True)
                 oForm.Items.Item("0_U_E").SetAutoManagedAttribute(SAPbouiCOM.BoAutoManagedAttr.ama_Editable, SAPbouiCOM.BoAutoFormMode.afm_Ok, SAPbouiCOM.BoModeVisualBehavior.mvb_False)
                 CargaCombos(oForm)
+
+                ' A petición de Carlos Zea, ocultamos columna 3 y 4
+                CType(oForm.Items.Item("0_U_G").Specific, SAPbouiCOM.Matrix).Columns.Item("C_0_3").Visible = False
+                CType(oForm.Items.Item("0_U_G").Specific, SAPbouiCOM.Matrix).Columns.Item("C_0_4").Visible = False
             End If
 
             EventHandler_FORM_VISIBLE = True
