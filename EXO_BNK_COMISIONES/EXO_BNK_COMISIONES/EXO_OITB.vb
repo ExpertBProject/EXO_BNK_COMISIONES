@@ -52,6 +52,39 @@ Public Class EXO_OITB
     Public Overrides Function menus() As XmlDocument
         Return Nothing
     End Function
+    Public Overrides Function SBOApp_MenuEvent(ByVal infoEvento As MenuEvent) As Boolean
+        Dim oForm As SAPbouiCOM.Form = Nothing
+
+        Try
+            If infoEvento.BeforeAction = True Then
+
+            Else
+                Select Case infoEvento.MenuUID
+                    Case "1282"
+                        'Comprobamos si el formulario es el de Grupos de artículos 
+                        oForm = objGlobal.SBOApp.Forms.ActiveForm
+                        If oForm.TypeEx = "63" Then
+                            If oForm.Visible = True Then
+                                If oForm.Mode = BoFormMode.fm_ADD_MODE And CType(oForm.Items.Item("cbGCOMI").Specific, SAPbouiCOM.ComboBox).Selected Is Nothing Then
+                                    CType(oForm.Items.Item("cbGCOMI").Specific, SAPbouiCOM.ComboBox).Select("SINCOMISION", SAPbouiCOM.BoSearchKey.psk_ByValue)
+                                End If
+                            End If
+                        End If
+                End Select
+            End If
+
+            Return MyBase.SBOApp_MenuEvent(infoEvento)
+
+        Catch exCOM As System.Runtime.InteropServices.COMException
+            objGlobal.Mostrar_Error(exCOM, EXO_UIAPI.EXO_UIAPI.EXO_TipoMensaje.Excepcion)
+            Return False
+        Catch ex As Exception
+            objGlobal.Mostrar_Error(ex, EXO_UIAPI.EXO_UIAPI.EXO_TipoMensaje.Excepcion)
+            Return False
+        Finally
+            EXO_CleanCOM.CLiberaCOM.liberaCOM(CType(oForm, Object))
+        End Try
+    End Function
 
     Public Overrides Function SBOApp_ItemEvent(infoEvento As ItemEvent) As Boolean
         Try
@@ -175,6 +208,9 @@ Public Class EXO_OITB
             CType(oItem.Specific, SAPbouiCOM.StaticText).Caption = "Grupo de comisión"
 #End Region
             CargaCombos(oForm)
+            If oForm.Mode = BoFormMode.fm_ADD_MODE And CType(oForm.Items.Item("cbGCOMI").Specific, SAPbouiCOM.ComboBox).Selected Is Nothing Then
+                CType(oForm.Items.Item("cbGCOMI").Specific, SAPbouiCOM.ComboBox).Select("SINCOMISION", SAPbouiCOM.BoSearchKey.psk_ByValue)
+            End If
             EventHandler_FORM_LOAD_After = True
 
 
@@ -218,4 +254,5 @@ Public Class EXO_OITB
             EXO_CleanCOM.CLiberaCOM.liberaCOM(CType(oRs, Object))
         End Try
     End Function
+
 End Class

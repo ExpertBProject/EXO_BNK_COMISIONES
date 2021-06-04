@@ -209,9 +209,9 @@ Public Class EXO_GCOM
                 oForm.Items.Item("0_U_E").SetAutoManagedAttribute(SAPbouiCOM.BoAutoManagedAttr.ama_Editable, SAPbouiCOM.BoAutoFormMode.afm_Ok, SAPbouiCOM.BoModeVisualBehavior.mvb_False)
                 CargaCombos(oForm)
 
-                ' A petición de Carlos Zea, ocultamos columna 3 y 4
-                CType(oForm.Items.Item("0_U_G").Specific, SAPbouiCOM.Matrix).Columns.Item("C_0_3").Visible = False
-                CType(oForm.Items.Item("0_U_G").Specific, SAPbouiCOM.Matrix).Columns.Item("C_0_4").Visible = False
+                '' A petición de Carlos Zea, ocultamos columna 3 y 4
+                'CType(oForm.Items.Item("0_U_G").Specific, SAPbouiCOM.Matrix).Columns.Item("C_0_3").Visible = False
+                'CType(oForm.Items.Item("0_U_G").Specific, SAPbouiCOM.Matrix).Columns.Item("C_0_4").Visible = False
             End If
 
             EventHandler_FORM_VISIBLE = True
