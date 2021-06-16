@@ -129,13 +129,17 @@ Public Class EXO_GCOM
                         Case "UDO_FT_EXO_GCOM"
                             Select Case infoEvento.EventType
                                 Case SAPbouiCOM.BoEventTypes.et_COMBO_SELECT
+                                Case SAPbouiCOM.BoEventTypes.et_LOST_FOCUS
 
                                 Case SAPbouiCOM.BoEventTypes.et_CLICK
 
                                 Case SAPbouiCOM.BoEventTypes.et_ITEM_PRESSED
 
                                 Case SAPbouiCOM.BoEventTypes.et_VALIDATE
-
+                                    If EventHandler_VALIDATE_Before(objGlobal, infoEvento) = False Then
+                                        GC.Collect()
+                                        Return False
+                                    End If
                                 Case SAPbouiCOM.BoEventTypes.et_KEY_DOWN
 
                                 Case SAPbouiCOM.BoEventTypes.et_MATRIX_LINK_PRESSED
@@ -298,6 +302,7 @@ Public Class EXO_GCOM
             EXO_CleanCOM.CLiberaCOM.liberaCOM(CType(oForm, Object))
         End Try
     End Function
+
     Private Sub CrearCodigo(ByRef oForm As SAPbouiCOM.Form)
         Dim sAnno As String = "" : Dim sVendedor As String = "" : Dim sComision As String = ""
         Dim sSQL As String = "" : Dim oRs As SAPbobsCOM.Recordset = Nothing
@@ -331,13 +336,23 @@ Public Class EXO_GCOM
     End Sub
     Private Function EventHandler_COMBO_SELECT(ByRef objGlobal As EXO_UIAPI.EXO_UIAPI, ByRef pVal As ItemEvent) As Boolean
         Dim oForm As SAPbouiCOM.Form = Nothing
+        Dim sGrupo As String = ""
         EventHandler_COMBO_SELECT = False
         Dim sTable As String = ""
         Try
             oForm = objGlobal.SBOApp.Forms.Item(pVal.FormUID)
             If pVal.ItemChanged = True And pVal.ItemUID = "Item_1" Then
                 CrearCodigo(oForm)
+            ElseIf pVal.ItemUID = "0_U_G" And pVal.ColUID = "C_0_1" Then
+                If CType(CType(oForm.Items.Item("0_U_G").Specific, SAPbouiCOM.Matrix).Columns.Item("C_0_1").Cells.Item(pVal.Row).Specific, SAPbouiCOM.ComboBox).Selected IsNot Nothing Then
+                    sGrupo = CType(CType(oForm.Items.Item("0_U_G").Specific, SAPbouiCOM.Matrix).Columns.Item("C_0_1").Cells.Item(pVal.Row).Specific, SAPbouiCOM.ComboBox).Selected.Value.ToString
+                    'Comprobamos que en toda la matrix no haya mas de 1 codigo de grupo seleccionado
+                    If MatrixToNet(oForm, sGrupo) = False Then
+                        Exit Function
+                    End If
+                End If
             End If
+
 
             EventHandler_COMBO_SELECT = True
 
@@ -349,4 +364,98 @@ Public Class EXO_GCOM
             EXO_CleanCOM.CLiberaCOM.liberaCOM(CType(oForm, Object))
         End Try
     End Function
+    Private Function EventHandler_VALIDATE_Before(ByRef objGlobal As EXO_UIAPI.EXO_UIAPI, ByRef pVal As ItemEvent) As Boolean
+        Dim oForm As SAPbouiCOM.Form = Nothing
+        Dim sGrupo As String = ""
+        EventHandler_VALIDATE_Before = False
+        Dim sTable As String = ""
+        Try
+            oForm = objGlobal.SBOApp.Forms.Item(pVal.FormUID)
+            If pVal.ItemUID = "0_U_G" And pVal.ColUID = "C_0_1" Then
+                If CType(CType(oForm.Items.Item("0_U_G").Specific, SAPbouiCOM.Matrix).Columns.Item("C_0_1").Cells.Item(pVal.Row).Specific, SAPbouiCOM.ComboBox).Selected IsNot Nothing Then
+                    sGrupo = CType(CType(oForm.Items.Item("0_U_G").Specific, SAPbouiCOM.Matrix).Columns.Item("C_0_1").Cells.Item(pVal.Row).Specific, SAPbouiCOM.ComboBox).Selected.Value.ToString
+                    'Comprobamos que en toda la matrix no haya mas de 1 codigo de grupo seleccionado
+                    If MatrixToNet(oForm, sGrupo) = False Then
+                        Exit Function
+                    End If
+                End If
+            End If
+
+
+            EventHandler_VALIDATE_Before = True
+
+        Catch exCOM As System.Runtime.InteropServices.COMException
+            objGlobal.Mostrar_Error(exCOM, EXO_UIAPI.EXO_UIAPI.EXO_TipoMensaje.Excepcion)
+        Catch ex As Exception
+            objGlobal.Mostrar_Error(ex, EXO_UIAPI.EXO_UIAPI.EXO_TipoMensaje.Excepcion)
+        Finally
+            EXO_CleanCOM.CLiberaCOM.liberaCOM(CType(oForm, Object))
+        End Try
+    End Function
+#Region "Métodos auxiliares"
+    Private Function MatrixToNet(ByRef oForm As SAPbouiCOM.Form, ByVal sGrupo As String) As Boolean
+        Dim sXML As String = ""
+        Dim oMatrixXML As New Xml.XmlDocument
+        Dim oXmlListRow As Xml.XmlNodeList = Nothing
+        Dim oXmlListColumn As Xml.XmlNodeList = Nothing
+        Dim oXmlNodeField As Xml.XmlNode = Nothing
+        Dim sGrupoleido As String = "" : Dim iGrupoTotal As Integer = 0
+        Dim oArrCampos As Boolean = False
+        Dim sMatrixUID As String = ""
+
+        MatrixToNet = False
+
+        Try
+            sXML = CType(oForm.Items.Item("0_U_G").Specific, SAPbouiCOM.Matrix).SerializeAsXML(SAPbouiCOM.BoMatrixXmlSelect.mxs_All)
+            oMatrixXML.LoadXml(sXML)
+
+            sMatrixUID = oMatrixXML.SelectSingleNode("//Matrix/UniqueID").InnerText
+            oXmlListRow = oMatrixXML.SelectNodes("//Matrix/Rows/Row")
+            iGrupoTotal = 0
+
+            For Each oXmlNodeRow As Xml.XmlNode In oXmlListRow
+                oXmlListColumn = oXmlNodeRow.SelectNodes("Columns/Column")
+
+                'Inicializamos para de dejar a False
+
+                oArrCampos = False
+
+                'Inicializamos los datos del registro
+                sGrupoleido = ""
+
+                For Each oXmlNodeColumn As Xml.XmlNode In oXmlListColumn
+                    oXmlNodeField = oXmlNodeColumn.SelectSingleNode("ID")
+
+                    If oXmlNodeField.InnerXml = "C_0_1" Then 'CodigoGrupo
+                        oXmlNodeField = oXmlNodeColumn.SelectSingleNode("Value")
+
+                        sGrupoleido = oXmlNodeField.InnerText
+
+                        oArrCampos = True
+                        If sGrupo = sGrupoleido Then
+                            iGrupoTotal += 1
+                        End If
+                    End If
+
+                    If oArrCampos = True And iGrupoTotal >= 2 Then
+                        Exit For
+                    End If
+                Next
+
+                'Hemos recorrido el registro, y comprobamos el almacén
+                If iGrupoTotal >= 2 Then
+                    objGlobal.SBOApp.StatusBar.SetText("No es posible seleccionar el grupo " & sGrupo & " varias veces", BoMessageTime.bmt_Short, BoStatusBarMessageType.smt_Error)
+                    Exit Function
+                End If
+            Next
+
+            MatrixToNet = True
+
+        Catch exCOM As System.Runtime.InteropServices.COMException
+            Throw exCOM
+        Catch ex As Exception
+            Throw ex
+        End Try
+    End Function
+#End Region
 End Class
