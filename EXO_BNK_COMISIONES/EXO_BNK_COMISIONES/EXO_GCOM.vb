@@ -17,9 +17,12 @@ Public Class EXO_GCOM
         Dim menuXML As String = objGlobal.funciones.leerEmbebido(Me.GetType(), "XML_MENU.xml")
         objGlobal.SBOApp.LoadBatchActions(menuXML)
         Dim res As String = objGlobal.SBOApp.GetLastBatchResults
+        Dim sSQL As String = ""
 
         If objGlobal.SBOApp.Menus.Exists("EXO-MnCOMI") = True Then
-            Path = objGlobal.pathMenus   'objGlobal.compañia.conexionSAP.path & "\02.Menus"
+            sSQL = "SELECT T0.""U_EXO_PATH"" FROM ""@EXO_OGEN""  T0 "
+            Path = objGlobal.refDi.SQL.sqlStringB1(sSQL)
+            Path &= "\02.Menus"
             If Path <> "" Then
                 If IO.File.Exists(Path & "\MnCOMI.png") = True Then
                     objGlobal.SBOApp.Menus.Item("EXO-MnCOMI").Image = Path & "\MnCOMI.png"
