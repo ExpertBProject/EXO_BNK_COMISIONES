@@ -14,10 +14,12 @@ Public Class EXO_GLOBALES
         Else
             Dim buffer(CInt(s.Length() - 1)) As Byte
             s.Read(buffer, 0, buffer.Length)
-
-            Dim sw As BinaryWriter = New BinaryWriter(File.Open(pRuta, FileMode.Create))
-            sw.Write(buffer)
-            sw.Close()
+            Try
+                Dim sw As BinaryWriter = New BinaryWriter(File.Open(pRuta, FileMode.Create))
+                sw.Write(buffer)
+                sw.Close()
+            Catch
+            End Try
         End If
 
 

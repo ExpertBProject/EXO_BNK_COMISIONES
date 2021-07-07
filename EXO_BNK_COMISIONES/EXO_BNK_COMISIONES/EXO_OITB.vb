@@ -26,7 +26,10 @@ Public Class EXO_OITB
                     'Sino existe lo copiamos y asignamos
                     EXO_GLOBALES.CopiarRecurso(Reflection.Assembly.GetExecutingAssembly(), "MnCOMI.png", Path & "\MnCOMI.png")
 
-                    objGlobal.SBOApp.Menus.Item("EXO-MnCOMI").Image = Path & "\MnCOMI.png"
+                    Try
+                        objGlobal.SBOApp.Menus.Item("EXO-MnCOMI").Image = Path & "\MnCOMI.png"
+                    Catch
+                    End Try
                 End If
             End If
         End If
